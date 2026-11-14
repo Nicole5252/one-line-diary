@@ -768,7 +768,10 @@ export function App() {
           e.stopPropagation();
           e.preventDefault();
           finish();
+          return;
         }
+        // tapping anywhere outside the expanded entry collapses it
+        if (expandedId && !(e.target as HTMLElement).closest("[data-entry]")) setExpandedId(null);
       }}
     >
       <div className={"ol-overview" + (overviewOpen ? "" : " ol-off")}>

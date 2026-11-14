@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
 import type { Entry } from "../types.ts";
 import { AutoHeight } from "./AutoHeight.tsx";
@@ -47,6 +47,10 @@ export function EntryItem({
   useEffect(() => {
     if (slideRef.current) slideTo(slideRef.current, revealed);
   }, [revealed]);
+  const [editing, setEditing] = useState(false);
+  useEffect(() => {
+    if (!expanded) setEditing(false);
+  }, [expanded]);
   const same = entry.short === null || entry.short === entry.raw;
   const shown = settling ? entry.raw : (entry.short ?? entry.raw);
 
@@ -75,8 +79,12 @@ export function EntryItem({
       <div className="ol-slide" data-slide ref={slideRef}>
         <div className="ol-entry-in" data-inner>
           <AutoHeight>
-            {!expanded ? (
-              <p className="ol-text">{shown}</p>
+            {!expanded || !editing ? (
+              // read-only: a tap anywhere on the entry toggles expand/collapse
+              <>
+                <p className="ol-text">{shown}</p>
+                {expanded && !same && <p className="ol-raw ol-rawp">{entry.raw}</p>}
+              </>
             ) : same ? (
               <AutoTextarea className="ol-edit" value={entry.raw} onChange={(v) => onChange({ raw: v, short: v })} />
             ) : (
@@ -86,6 +94,17 @@ export function EntryItem({
               </>
             )}
             {expanded && <Images blobs={entry.images} />}
+            {expanded && (
+              <button
+                className="ol-editbtn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditing((v) => !v);
+                }}
+              >
+                {editing ? "完成" : "編輯"}
+              </button>
+            )}
           </AutoHeight>
         </div>
       </div>
